@@ -71,24 +71,25 @@ export function BaseCarousel({
     });
   }, [totalPage]);
 
-  useEffect(() => {
-    const childrenElement = containerElement?.querySelectorAll(
-      '[id^="carousel-items-"]'
-    );
+  useLayoutEffect(() => {
     function calculateContainerWidth() {
-      const containerWidth =
-        containerElement?.getBoundingClientRect().width ?? 0;
-      setContainerWidth(containerWidth);
+      const containerRealwidth =
+        containerElement?.getBoundingClientRect().width ??
+        containerElement?.offsetWidth ??
+        0;
+      setContainerWidth(containerRealwidth);
     }
 
     function calculateLimitItems() {
-      const containerWidth =
-        containerElement?.getBoundingClientRect().width ?? 300;
+      const containerWidth = containeWidth ?? 0;
+      const childrenElement = containerElement?.querySelectorAll(
+        `[id^="carousel-items-"]`
+      );
 
       let measurementSize: number[] = [];
       let measurementHeight: number[] = [];
       childrenElement?.forEach((element) => {
-        const size = element.getBoundingClientRect().width;
+        const size = element.clientWidth;
         const height = element.clientHeight;
 
         measurementSize.push(size);
@@ -138,7 +139,7 @@ export function BaseCarousel({
     return () => {
       window.removeEventListener("resize", measureElement);
     };
-  }, [containerElement, limit]);
+  }, [containeWidth, containerElement, limit]);
 
   useLayoutEffect(() => {
     setEnableAnimation(true);
@@ -153,7 +154,8 @@ export function BaseCarousel({
   return (
     <div
       className={classNames(
-        "w-full relative flex flex-row justify-center items-center"
+        "w-full relative flex flex-row justify-center items-center opacity-0",
+        { "opacity-100": containeWidth }
       )}
       style={{
         animation: `fadeIn ${1}s ease-in-out forwards`,
@@ -180,7 +182,7 @@ export function BaseCarousel({
             enableAnimation={enableAnimation}
           >
             {elements?.map((element, elementIndex) => {
-              const key = `carousel-items-${(index + 1) * elementIndex + 1}`;
+              const key = `carousel-items-${index + 1}-${elementIndex + 1}`;
               return (
                 <div id={key} key={key}>
                   {element}
