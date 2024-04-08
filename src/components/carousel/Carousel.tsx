@@ -89,7 +89,8 @@ export function BaseCarousel({
       let measurementHeight: number[] = [];
       childrenElement?.forEach((element) => {
         const size = element.getBoundingClientRect().width;
-        const height = document.getElementById(element.id)?.offsetHeight ?? 0;
+        const height = element.clientHeight;
+
         measurementSize.push(size);
         measurementHeight.push(height);
       });
@@ -163,7 +164,7 @@ export function BaseCarousel({
         ref={setContainerElement}
         id="carousel-container"
         className={classNames(
-          "overflow-x-hidden w-full relative flex flex-row justify-center items-center",
+          "overflow-hidden w-full relative flex flex-row justify-center items-center",
           className
         )}
         style={{
@@ -210,7 +211,7 @@ function CarouselPage({
   enableAnimation,
 }: PropsWithChildren<CarouselPageProps>) {
   const carouselItemClassNames = classNames(
-    "w-full flex justify-around items-center gap-2 p-4",
+    "w-full flex justify-around items-center gap-2 h-full",
     "absolute",
     { "transition-all": enableAnimation },
     className
