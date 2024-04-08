@@ -9,6 +9,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import { debounce } from "./utils";
 
 export type BaseCarouselProps = {
   items: ReactNode[];
@@ -24,6 +25,8 @@ export function BaseCarousel({
   PrevButtonComponent,
   limit = 5,
 }: BaseCarouselProps) {
+  const [containerElement, setContainerElement] =
+    useState<HTMLDivElement | null>(null);
   const [maxItemHeight, setMaxItemHeight] = useState<number | null>(null);
   const [visibleLimit, setVisibleLimit] = useState(limit);
   const [containeWidth, setContainerWidth] = useState<number | null>(null);
@@ -69,8 +72,7 @@ export function BaseCarousel({
   }, [totalPage]);
 
   useEffect(() => {
-    const containerElement = document.getElementById("carousel-container");
-    const childrenElement = document.querySelectorAll(
+    const childrenElement = containerElement?.querySelectorAll(
       '[id^="carousel-items-"]'
     );
     function calculateContainerWidth() {
@@ -85,7 +87,7 @@ export function BaseCarousel({
 
       let measurementSize: number[] = [];
       let measurementHeight: number[] = [];
-      childrenElement.forEach((element) => {
+      childrenElement?.forEach((element) => {
         const size = element.getBoundingClientRect().width;
         const height = document.getElementById(element.id)?.offsetHeight ?? 0;
         measurementSize.push(size);
@@ -95,7 +97,8 @@ export function BaseCarousel({
       const visibleItems = measurementSize.reduce(
         (visibleSizes: number[], size) => {
           const totalWidth = visibleSizes.reduce((sum, s) => sum + s, 0);
-          if (size > 0 && totalWidth + size < containerWidth) {
+          const newSize = totalWidth + size * 1.5;
+          if (size > 0 && newSize < containerWidth) {
             return [...visibleSizes, size];
           }
           return visibleSizes;
@@ -121,11 +124,12 @@ export function BaseCarousel({
     }
 
     function measureElement() {
+      setEnableAnimation(false);
       calculateContainerWidth();
       calculateLimitItems();
-      if (activeIndex + 1 > totalPage) {
-        setActiveIndex(totalPage - 1);
-      }
+      debounce(() => {
+        setEnableAnimation(true);
+      }, 500)();
     }
 
     measureElement();
@@ -133,11 +137,17 @@ export function BaseCarousel({
     return () => {
       window.removeEventListener("resize", measureElement);
     };
-  }, [activeIndex, limit, totalPage]);
+  }, [containerElement, limit]);
 
   useLayoutEffect(() => {
     setEnableAnimation(true);
   }, []);
+
+  useEffect(() => {
+    if (activeIndex + 1 > totalPage) {
+      setActiveIndex(totalPage - 1);
+    }
+  }, [activeIndex, totalPage]);
 
   return (
     <div
@@ -150,6 +160,7 @@ export function BaseCarousel({
     >
       {<PrevButtonComponent onClick={prevPage} />}
       <div
+        ref={setContainerElement}
         id="carousel-container"
         className={classNames(
           "overflow-x-hidden w-full relative flex flex-row justify-center items-center",
