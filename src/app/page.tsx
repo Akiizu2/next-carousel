@@ -4,7 +4,7 @@ import { BaseCarousel } from "@/components";
 import { ReactNode } from "react";
 
 export default function Home() {
-  const mockItems = Array(30)
+  const mockItems = Array(33)
     .fill(" ")
     .map((_, index) => (
       <div

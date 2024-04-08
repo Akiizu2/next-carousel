@@ -46,7 +46,15 @@ export function BaseCarousel({
       .map((_, page) => {
         const startIndex = page * pageLimit;
         const endIndex = startIndex + pageLimit;
-        return items.slice(startIndex, endIndex);
+        const slicedItems = items.slice(startIndex, endIndex);
+
+        const sliceItemCount = slicedItems.length;
+        const filledItemsCount = visibleLimit - sliceItemCount;
+        const filledItems = items.slice(0, filledItemsCount);
+
+        return sliceItemCount < visibleLimit
+          ? [...slicedItems, ...filledItems]
+          : slicedItems;
       });
     return pages;
   }, [items, visibleLimit, totalPage]);
